@@ -1,0 +1,16 @@
+openai 
+anthropic 
+PyGithub 
+python-dotenv 
+pydantic 
+requests
+fastapi
+uvicorn
+ollama
+langchain
+langchain-groq
+qdrant-client 
+fastembed 
+tree-sitter 
+tree-sitter-typescript
+langgraph

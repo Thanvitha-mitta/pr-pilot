@@ -1,0 +1,9 @@
+# Python environments
+venv/
+__pycache__/
+
+# Secrets and env variables
+.env
+
+# Database storage (from old local docker)
+qdrant_data/
