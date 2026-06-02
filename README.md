@@ -6,6 +6,24 @@ Built to eliminate the bottleneck of manual code reviews, PR-Pilot acts as a fir
 
 ---
 
+## 🌐 Live Cloud Deployment & Demo
+
+This agent is actively deployed on **Render** and utilizes **Qdrant Cloud** for vector storage. You can test the live AI agent without installing anything locally!
+
+**Check the Server Status:**
+Click here to see the active server: [https://pr-pilot-3gvu.onrender.com/](https://pr-pilot-3gvu.onrender.com/)
+
+**Test the AI Agent Yourself:**
+1. **Fork** any public repository on your GitHub account.
+2. Go to your forked repository **Settings** -> **Webhooks** -> **Add Webhook**.
+3. Paste the live agent payload URL: `https://pr-pilot-3gvu.onrender.com/webhook`
+4. Change **Content type** to `application/json`.
+5. Under events, select **Let me select individual events**, uncheck "Pushes", and check **Pull Requests**. Save it.
+6. Make a broken code change in your repository and open a Pull Request.
+7. Within 10 seconds, the PR-Pilot agent will autonomously comment on your PR with a structured code review!
+
+---
+
 ## 🏗️ System Architecture
 
 Unlike standard AI chatbots, PR-Pilot is designed as a highly fault-tolerant **State Machine** orchestrated by **LangGraph**, exposed via a **FastAPI** webhook server. This allows the system to process GitHub webhooks asynchronously in the background without HTTP timeouts.
@@ -13,7 +31,7 @@ Unlike standard AI chatbots, PR-Pilot is designed as a highly fault-tolerant **S
 ### The Pipeline
 1. **Event Trigger:** A developer opens or updates a Pull Request. GitHub fires a webhook payload to the FastAPI endpoint.
 2. **Node 1 (Fetch):** The agent authenticates via the PyGithub API and extracts the raw diffs and file paths.
-3. **Node 2 (Retrieve / RAG):** The agent queries a **Qdrant** Vector Database to pull surrounding codebase context. *(See Codebase Ingestion below).*
+3. **Node 2 (Retrieve / RAG):** The agent queries a **Qdrant** Vector Database to pull surrounding codebase context.
 4. **Node 3 (Reason):** The diff and context are fed into **Llama-3.3-70b (via Groq LPUs)**. Strict JSON output is enforced using **Pydantic** to map identified issues to exact line numbers and severities.
 5. **Node 4 (Action):** The agent formats the JSON payload into a clean Markdown comment and posts it directly to the GitHub PR.
 
@@ -42,51 +60,43 @@ A major challenge in AI code review is "Helpfulness Bias" (the LLM inventing min
 * **AI / Orchestration:** LangGraph, LangChain, LangSmith
 * **Inference:** Llama-3.3-70b (Groq API)
 * **Backend:** FastAPI, Uvicorn, Python 3.10
-* **Vector DB & RAG:** Qdrant, FastEmbed, Tree-sitter (Abstract Syntax Trees)
+* **Vector DB & RAG:** Qdrant Cloud, FastEmbed, Tree-sitter (Abstract Syntax Trees)
 * **Integrations:** GitHub REST API, GitHub Webhooks
 
 ---
 
-## 🛠️ Local Setup & Execution
+## 🛠️ Local Developer Setup
+
+If you wish to clone and run this architecture locally:
 
 ### 1. Prerequisites
-* Qdrant Database (Running via Docker or Qdrant Cloud)
-* Groq API Key
-* LangSmith API Key
-* GitHub Personal Access Token (Classic, with `repo` scope)
+* Qdrant Database (Docker or Cloud)
+* Groq API Key & LangSmith API Key
+* GitHub Personal Access Token (Classic, `repo` scope)
 
 ### 2. Environment Variables (`.env`)
 ```env
 GITHUB_TOKEN=ghp_...
 GROQ_API_KEY=gsk_...
-QDRANT_URL=http://localhost:6333
+QDRANT_URL=https://your-qdrant-cluster.qdrant.io:6333
 LANGCHAIN_TRACING_V2=true
 LANGCHAIN_API_KEY=lsv2_...
 LANGCHAIN_PROJECT=pr-pilot
 ```
 
-### 3. Installation
+### 3. Installation & Execution
 ```bash
+# Install dependencies
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
-```
 
-### 4. Running the Agent
-Start the FastAPI Webhook Server:
-```bash
+# Start the local server
 uvicorn app.main:app --reload
-```
 
-Trigger a test PR (Simulate GitHub Webhook):
-```bash
+# Trigger a simulated webhook locally
 python scripts/test_webhook.py
-```
 
-Run the Evaluation Harness (Measure Precision/Recall):
-```bash
+# Run the Evaluation Harness
 python evals/run_evals.py
 ```
-
----
-*Built as a production-ready demonstration of Agentic AI, RAG, and MLOps principles.*
