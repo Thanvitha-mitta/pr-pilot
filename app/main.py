@@ -12,6 +12,14 @@ load_dotenv()
 app = FastAPI(title="AI PR Review Agent")
 agent = build_agent_graph()
 
+@app.get("/")
+def home():
+    return {
+        "status": "🟢 Online",
+        "message": "🤖 PR-Pilot AI Agent is actively listening for GitHub Webhooks.",
+        "project_by": "Mitta Thanvitha"
+    }
+
 # ==========================================
 # BACKGROUND TASK: RUN THE AI PIPELINE
 # ==========================================
@@ -74,12 +82,3 @@ async def github_webhook(request: Request, background_tasks: BackgroundTasks):
         return {"status": "Success! AI Review queued in background."}
         
     return {"status": "Ignored. Event is not a PR creation/update."}
-
-
-@app.get("/")
-def home():
-    return {
-        "status": "🟢 Online",
-        "message": "🤖 PR-Pilot AI Agent is actively listening for GitHub Webhooks.",
-        "project_by": "Mitta Thanvitha"
-    }
